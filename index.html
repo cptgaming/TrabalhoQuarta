@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <style>
+        /* Reset e estilos gerais - feito por nos */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 32px;
+            width: 100%;
+            max-width: 620px;
+            height: fit-content;
+        }
+
+        h1 {
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-size: 1.8rem;
+        }
+
+        .subtitulo {
+            color: #718096;
+            font-size: 0.9rem;
+            margin-bottom: 28px;
+        }
+
+        /* Formulario de cadastro - feito por nos */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            padding: 11px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            color: #2d3748;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        select {
+            padding: 11px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            color: #2d3748;
+            background: #fff;
+            cursor: pointer;
+        }
+
+        .btn-adicionar {
+            padding: 11px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn-adicionar:hover {
+            background: #5a67d8;
+        }
+
+        .btn-adicionar:active {
+            transform: scale(0.98);
+        }
+
+        /* Contador e divisor - feito por nos */
+        .divisor {
+            border: none;
+            border-top: 1px solid #e2e8f0;
+            margin-bottom: 14px;
+        }
+
+        .contador {
+            font-size: 0.85rem;
+            color: #718096;
+            margin-bottom: 14px;
+        }
+
+        /* Lista de tarefas - feito por nos */
+        #lista-tarefas {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .tarefa-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 16px;
+            border-radius: 8px;
+            background: #f7fafc;
+            border-left: 4px solid #667eea;
+            transition: opacity 0.3s, background 0.2s;
+        }
+
+        .tarefa-item:hover {
+            background: #edf2f7;
+        }
+
+        .tarefa-item.concluida {
+            opacity: 0.5;
+            border-left-color: #48bb78;
+        }
+
+        .tarefa-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #48bb78;
+            flex-shrink: 0;
+        }
+
+        .tarefa-texto {
+            flex: 1;
+            font-size: 0.95rem;
+            color: #2d3748;
+        }
+
+        .tarefa-item.concluida .tarefa-texto {
+            text-decoration: line-through;
+        }
+
+        /*
+          Badges de prioridade - com auxilio da IA
+          Perguntamos a IA como aplicar estilos diferentes com base
+          em classes dinamicas. Ela explicou a logica de nomear
+          as classes com sufixo (badge-alta, badge-media, badge-baixa)
+          e gerar o nome da classe via template string no JS.
+          O estilo em si (cores, bordas) nos definimos por conta.
+         */
+        .badge {
+            font-size: 0.72rem;
+            padding: 3px 9px;
+            border-radius: 12px;
+            font-weight: 700;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+        }
+
+        .badge-alta { background: #fc8181; }
+        .badge-media { background: #f6ad55; }
+        .badge-baixa { background: #68d391; color: #276749; }
+
+        .btn-excluir {
+            background: none;
+            border: none;
+            color: #cbd5e0;
+            cursor: pointer;
+            font-size: 1.1rem;
+            line-height: 1;
+            padding: 2px 4px;
+            border-radius: 4px;
+            flex-shrink: 0;
+            transition: color 0.2s;
+        }
+
+        .btn-excluir:hover {
+            color: #fc8181;
+        }
+
+        .msg-vazia {
+            text-align: center;
+            color: #a0aec0;
+            padding: 24px 0;
+            font-style: italic;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <!-- Cabecalho - feito por nos -->
+        <h1>📝 To-Do List</h1>
+        <p class="subtitulo">Gerencie suas tarefas de forma simples e organizada</p>
+
+        <!-- Formulario de cadastro - feito por nos -->
+        <div class="form-group">
+            <input type="text" id="input-tarefa" placeholder="Descrição da tarefa..." />
+            <select id="select-prioridade">
+                <option value="alta">🔴 Alta prioridade</option>
+                <option value="media" selected>🟡 Média prioridade</option>
+                <option value="baixa">🟢 Baixa prioridade</option>
+            </select>
+            <button class="btn-adicionar" onclick="adicionarTarefa()">+ Adicionar Tarefa</button>
+        </div>
+
+        <hr class="divisor" />
+        <p class="contador" id="contador">0 tarefa(s) &nbsp;|&nbsp; 0 concluída(s)</p>
+
+        <!-- Lista de tarefas -->
+        <ul id="lista-tarefas">
+            <li class="msg-vazia">Nenhuma tarefa cadastrada ainda.</li>
+        </ul>
+
+    </div>
+
+    <script>
+        //  Estrutura de dados principal - feito por nos
+        let tarefas = [];
+
+        //  Função para adicionar nova tarefa - feito por nos 
+        function adicionarTarefa() {
+            const input = document.getElementById('input-tarefa');
+            const select = document.getElementById('select-prioridade');
+            const descricao = input.value.trim();
+
+            if (descricao === '') {
+                alert('Por favor, informe a descrição da tarefa.');
+                return;
+            }
+
+            // Objeto tarefa - feito por nos
+            // Uso do Date.now() como ID único - com auxílio da IA
+            const novaTarefa = {
+                id: Date.now(),
+                descricao: descricao,
+                prioridade: select.value,
+                concluida: false
+            };
+
+            tarefas.push(novaTarefa);
+            input.value = '';
+            select.value = 'media';
+            renderizarLista();
+        }
+
+        //  Função para alternar status de conclusão - feito por nos
+        function alternarConclusao(id) {
+            const tarefa = tarefas.find(t => t.id === id);
+            if (tarefa) {
+                tarefa.concluida = !tarefa.concluida;
+                renderizarLista();
+            }
+        }
+
+        // Função para excluir tarefa - feito por nos
+        function excluirTarefa(id) {
+            tarefas = tarefas.filter(t => t.id !== id);
+            renderizarLista();
+        }
+
+        /*
+         * FUNÇÃO renderizarLista() - com auxílio da IA
+         *
+         * Essa foi a parte mais complexa do projeto. sabiamos o que queria
+         * (mostrar as tarefas ordenadas na tela), mas não dominavamos bem o
+         * método .sort() com função comparadora customizada nem o spread
+         * operator [...tarefas].
+         *
+         * A IA nos explicou:
+         * - Por que usar [...tarefas].sort() em vez de tarefas.sort()
+         * (para não alterar o array original)
+         * - Como a função comparadora do .sort() funciona (retorno -1, 0 ou 1)
+         * - O uso do forEach com createElement e innerHTML
+         *
+         * A regra de negócio (concluídas vão pro final, resto por prioridade)
+         * foi decisão nossa. Eu que defini isso e pedimos ajuda só na sintaxe.
+         */
+        function renderizarLista() {
+            const lista = document.getElementById('lista-tarefas');
+
+            // Limpar a lista antes de re-renderizar
+            lista.innerHTML = '';
+
+            if (tarefas.length === 0) {
+                lista.innerHTML = '<li class="msg-vazia">Nenhuma tarefa cadastrada ainda.</li>';
+                document.getElementById('contador').textContent = '0 tarefa(s) | 0 concluída(s)';
+                return;
+            }
+
+            // Ordenar: não concluídas primeiro, depois por prioridade
+            // Lógica de ordenação - com auxílio da IA para a sintaxe do .sort()
+            const ordem = { alta: 0, media: 1, baixa: 2 };
+            const tarefasOrdenadas = [...tarefas].sort((a, b) => {
+                if (a.concluida !== b.concluida) return a.concluida ? 1 : -1;
+                return ordem[a.prioridade] - ordem[b.prioridade];
+            });
+
+            // Criar elemento para cada tarefa - com auxílio da IA para o template literal
+            tarefasOrdenadas.forEach(tarefa => {
+                const item = document.createElement('li');
+                item.className = 'tarefa-item' + (tarefa.concluida ? ' concluida' : '');
+
+                const labelPrioridade = tarefa.prioridade.charAt(0).toUpperCase()
+                                      + tarefa.prioridade.slice(1);
+
+                item.innerHTML = `
+                    <input type="checkbox"
+                           ${tarefa.concluida ? 'checked' : ''}
+                           onchange="alternarConclusao(${tarefa.id})" />
+                    <span class="tarefa-texto">${tarefa.descricao}</span>
+                    <span class="badge badge-${tarefa.prioridade}">${labelPrioridade}</span>
+                    <button class="btn-excluir"
+                            onclick="excluirTarefa(${tarefa.id})"
+                            title="Excluir tarefa">✕</button>
+                `;
+                lista.appendChild(item);
+            });
+
+            // Atualizar contador - feito por nos
+            const concluidas = tarefas.filter(t => t.concluida).length;
+            document.getElementById('contador').textContent =
+                `${tarefas.length} tarefa(s) \u00a0|\u00a0 ${concluidas} concluída(s)`;
+        }
+
+        /*
+         * Event Listener para tecla Enter - com auxílio da IA
+         * Queria que o Enter disparasse o cadastro. A IA mostrou
+         * o uso de addEventListener com keypress e e.key.
+         */
+        document.getElementById('input-tarefa').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') adicionarTarefa();
+        });
+    </script>
+</body>
+</html>
